@@ -1,0 +1,71 @@
+{
+  "totalMessages": 57,
+  "totalAudios": 0,
+  "totalImages": 35,
+  "totalStickers": 0,
+  "totalDocuments": 1,
+  "byCountry": {
+    "12": {
+      "messages": 22,
+      "audios": 0,
+      "images": 0,
+      "stickers": 0,
+      "documents": 0
+    },
+    "62": {
+      "messages": 30,
+      "audios": 0,
+      "images": 0,
+      "stickers": 0,
+      "documents": 1
+    },
+    "st": {
+      "messages": 5,
+      "audios": 0,
+      "images": 35,
+      "stickers": 0,
+      "documents": 0
+    }
+  },
+  "byDate": {
+    "2025-02-05": {
+      "messages": 35,
+      "audios": 0,
+      "images": 35,
+      "stickers": 0,
+      "documents": 1,
+      "byCountry": {
+        "62": {
+          "messages": 30,
+          "audios": 0,
+          "images": 0,
+          "stickers": 0,
+          "documents": 1
+        },
+        "st": {
+          "messages": 5,
+          "audios": 0,
+          "images": 35,
+          "stickers": 0,
+          "documents": 0
+        }
+      }
+    },
+    "2025-02-09": {
+      "messages": 22,
+      "audios": 0,
+      "images": 0,
+      "stickers": 0,
+      "documents": 0,
+      "byCountry": {
+        "12": {
+          "messages": 22,
+          "audios": 0,
+          "images": 0,
+          "stickers": 0,
+          "documents": 0
+        }
+      }
+    }
+  }
+}
