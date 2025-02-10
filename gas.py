@@ -30,7 +30,6 @@ async def handle_message(client, message):
 async def anjay():
     print("🚀 Userbot sedang berjalan...")
     await app.start()
-    await app.send_message("me", "Bot hidup dek")
     
 
 if __name__ == "__main__":
