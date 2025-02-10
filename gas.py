@@ -1,5 +1,5 @@
 import json
-import asyncio
+from asyncio import get_event_loop_policy
 from pyrogram import Client, filters
 
 # 🔥 GANTI DENGAN PUNYA KAMU 🔥
@@ -27,12 +27,11 @@ async def handle_message(client, message):
     except Exception as e:
         print(f"❌ Error: {e}")
 
-async def main():
+async def anjay():
     print("🚀 Userbot sedang berjalan...")
     await app.start()
     await app.send_message("me", "Bot hidup dek")
     
 
 if __name__ == "__main__":
-    asyncio.get_event_loop_policy().get_event_loop().run_until_complete(main)
-    console.info("Client stoped")
+    get_event_loop_policy().get_event_loop().run_until_complete(anjay)
