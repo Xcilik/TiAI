@@ -4,7 +4,7 @@ const targetGroupId = "120363394864692345@g.us"; // Ganti dengan ID grup yang be
 
 // Daftar pesan dan jadwalnya
 const schedule = [
-  { hour: 6, minute: 0, message: '👋 Selamat Pagi Kawan-kawan, yang masih bobo ayo bangun-bangun sudah pagi ini, Jangan lupa Sarapan pagi 🥰 🥰 🥰\n\n👥 All Member:\n' },
+  { hour: 18, minute: 56, message: '👋 Selamat Pagi Kawan-kawan, yang masih bobo ayo bangun-bangun sudah pagi ini, Jangan lupa Sarapan pagi 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 20, minute: 0, message: '😴 Selamat Malam Kawan-kawan, ini udah malem loh bobo yu nanti kalian sakit kalo bergadang terus, Have a good night sleep 🌝🌛💫\n\n👥 All Member:\n' },
   { hour: 4, minute: 30, message: '🥁 Dug dug dug, Bangun kawan-kawan, waktu sudah menunjukan jam 04:30 sebentar lagi azan subuh, mari kita menunaikan sholat subuh dulu yuks 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 12, minute: 3, message: '⏰ Waktu sudah menunjukan Jam 12.03, Jangan lupa solat Zuhur ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
