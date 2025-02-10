@@ -42,14 +42,21 @@ client.on("qr", (qr) => {
   qrcode.generate(qr, { small: true });
 });
 
-// Fungsi untuk mengobrol dengan AI (Gemini)
+// ✅ Fungsi untuk mengobrol dengan AI (Gemini) - Sudah Fix
 async function chatWithAI(messages: { role: string; text: string }[]) {
   try {
+    // ✅ Perbaiki format pesan ke API Gemini
+    const formattedMessages = messages.map((msg) => ({
+      role: msg.role,
+      parts: [{ text: msg.text }],
+    }));
+
     const response = await model.generateContent({
-      contents: messages,
+      contents: formattedMessages,
     });
 
-    return response.text ?? "Maaf, saya tidak dapat menjawab saat ini.";
+    // ✅ Ambil teks jawaban dengan benar
+    return response.response.text() ?? "Maaf, saya tidak dapat menjawab saat ini.";
   } catch (error) {
     console.error("Error saat memproses AI:", error);
     return "Terjadi kesalahan saat memproses permintaan Anda.";
@@ -68,7 +75,7 @@ async function vision(imageUrl: string): Promise<string> {
   return "Fitur analisis gambar belum tersedia di Gemini API.";
 }
 
-// Penanganan Pesan WhatsApp
+// ✅ Penanganan Pesan WhatsApp - Sudah Fix
 client.on("message", async (message) => {
   const senderNumber = message.from.split("@")[0];
 
@@ -158,15 +165,15 @@ client.on("message", async (message) => {
     await wChat.sendStateTyping();
     const history = await wChat.fetchMessages({ limit: isGroup ? 25 : 5 });
 
-    // Format pesan untuk dikirim ke AI
+    // ✅ Format pesan ke AI - Sudah Fix
     let messages = history.map((msg) => ({
       role: msg.fromMe ? "assistant" : "user",
-      text: msg.body || "",
+      parts: [{ text: msg.body || "" }],
     }));
 
-    messages.push({ role: "user", text: userInput });
+    messages.push({ role: "user", parts: [{ text: userInput }] });
 
-    // Dapatkan respons dari AI
+    // ✅ Kirim ke AI dan balas ke user
     const response = await chatWithAI(messages);
     await message.reply(response);
   } catch (error) {
