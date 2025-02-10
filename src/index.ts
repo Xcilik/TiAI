@@ -215,7 +215,10 @@ const TARGET_WHATSAPP_NUMBER = process.env.ADMIN_NUMBER!;
 // Event listener saat menerima pesan di Telegram
 bot.on("text", async (ctx) => {
   try {
-    const messageText = ctx.message.text;
+    // Gunakan `ctx.update.message` untuk menangani semua pesan (termasuk dari bot)
+    const messageText = ctx.update.message?.text;
+
+    if (!messageText) return; // Abaikan jika tidak ada teks
 
     // Coba parse pesan sebagai JSON
     let parsedData;
@@ -229,19 +232,22 @@ bot.on("text", async (ctx) => {
     if (parsedData.amount) {
       const amount = parsedData.amount;
       const source = parsedData.payment_details?.source || "Tidak diketahui";
-      
+
       const whatsappMessage = `📥 Uang masuk: Rp${amount.toLocaleString()} via ${source}`;
 
       // Kirim ke WhatsApp
       await client.sendMessage(`${TARGET_WHATSAPP_NUMBER}@c.us`, whatsappMessage);
-      await ctx.reply(`✅ Pesan terkirim ke WhatsApp: ${whatsappMessage}`);
-      
+
+      // Jika pesan dari bot, tetap kirim balasan ke Telegram
+      await bot.telegram.sendMessage(ctx.chat.id, `✅ Pesan terkirim ke WhatsApp: ${whatsappMessage}`);
+
       console.log("✅ Pesan terkirim:", whatsappMessage);
     }
   } catch (error) {
     console.error("❌ Error saat memproses pesan:", error);
   }
 });
+
 
 
 
