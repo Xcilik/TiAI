@@ -11,20 +11,10 @@ import {
   isAuthorized,
   ADMIN_NUMBER,
 } from "./whitelist.js";
-import { scheduleMessages } from "./sch.js"; // Import fungsi pesan terjadwal
+import { Telegraf } from "telegraf";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-
-
-import { Telegraf } from "telegraf";
-
-// Inisialisasi bot Telegram
-
-
-
-
 
 const client = new whatsapp.Client({
   authStrategy: new whatsapp.LocalAuth(),
@@ -89,7 +79,6 @@ async function vision(imageUrl: string): Promise<string> {
 // ✅ Penanganan Pesan WhatsApp - Sudah Fix
 client.on("message", async (message) => {
   const senderNumber = message.from.split("@")[0];
-
 
   // Abaikan pesan dari grup kecuali jika AI disebut
   const mentions = await message.getMentions();
@@ -236,11 +225,67 @@ bot.on("text", async (ctx) => {
   }
 });
 
+
+
+// Fungsi untuk mengirim pengingat salat ke grup WhatsApp
+function schedulePrayerReminders(groupId: string) {
+  const prayerTimes = [
+    { name: "Subuh", time: "04:30", message: "🌅 Waktunya Salat Subuh! Jangan lupa berdoa dan memulai hari dengan berkah." },
+    { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
+    { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
+    { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
+    { name: "Isya", time: "19:31", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+  ];
+
+  prayerTimes.forEach(({ name, time, message }) => {
+    const [hours, minutes] = time.split(":").map(Number);
+    scheduleDailyTask(hours, minutes, async () => {
+      try {
+        const chat = await client.getChatById(groupId);
+        await chat.sendMessage(`📢 *Pengingat Salat ${name}*\n\n${message}`);
+        console.log(`✅ Pengingat Salat ${name} terkirim ke grup ${groupId}`);
+      } catch (error) {
+        console.error(`❌ Gagal mengirim pengingat Salat ${name}:`, error);
+      }
+    });
+  });
+
+  console.log(`📅 Pengingat salat dijadwalkan untuk grup: ${groupId}`);
+}
+
+// Fungsi untuk menjadwalkan tugas setiap hari pada jam tertentu
+function scheduleDailyTask(hour: number, minute: number, task: () => void) {
+  const now = new Date();
+  const targetTime = new Date();
+
+  targetTime.setHours(hour, minute, 0, 0);
+
+  if (targetTime <= now) {
+    targetTime.setDate(targetTime.getDate() + 1); // Jika waktu sudah lewat, jadwalkan untuk hari berikutnya
+  }
+
+  const delay = targetTime.getTime() - now.getTime();
+
+  setTimeout(() => {
+    task();
+    setInterval(task, 24 * 60 * 60 * 1000); // Ulangi setiap 24 jam
+  }, delay);
+}
+
+// ID grup WhatsApp yang akan menerima pengingat (ganti dengan ID grup yang sesuai)
+const PRAYER_GROUP_ID = "120363394864692345@g.us";
+
+// Mulai pengingat salat otomatis
+
+
+
+
+
 // Inisialisasi Client
 client.initialize();
-scheduleMessages();
-// Jalankan bot Telegram
-// bot.launch().then(() => {
-//   console.log("🚀 Bot Telegram berjalan...");
-// });
-export { client };
+
+schedulePrayerReminders(PRAYER_GROUP_ID);
+
+bot.launch().then(() => {
+  console.log("🚀 Bot Telegram berjalan...");
+});
