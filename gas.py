@@ -30,6 +30,7 @@ app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_
 
 async def main():
     print("🚀 Userbot sedang berjalan...")
+    await client.send_message("me", "Bot hidup dek")
     await app.start()
 
 if __name__ == "__main__":
