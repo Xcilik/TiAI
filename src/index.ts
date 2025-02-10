@@ -231,28 +231,41 @@ bot.on("text", async (ctx) => {
 
 
 // Fungsi untuk mengirim pengingat salat ke grup WhatsApp
-function schedulePrayerReminders(groupId: string) {
+import moment from "moment-timezone";
+
+// Fungsi untuk mengirim pengingat salat ke grup WhatsApp dengan mention semua anggota
+async function schedulePrayerReminders(groupId: string) {
   const prayerTimes = [
     { name: "Subuh", time: "04:30", message: "🌅 Waktunya Salat Subuh! Jangan lupa berdoa dan memulai hari dengan berkah." },
     { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
     { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
     { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:36", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Isya", time: "19:42", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
-  prayerTimes.forEach(({ name, time, message }) => {
+  for (const { name, time, message } of prayerTimes) {
     scheduleDailyTask(time, async () => {
       try {
         const chat = await client.getChatById(groupId);
-        await chat.sendMessage(`📢 *Pengingat Salat ${name}*\n\n${message}`);
+        const participants = chat.participants.map((p) => `${p.id.user}@c.us`);
+        
+        let mentionText = "";
+        for (const participant of participants) {
+          mentionText += `@${participant.split("@")[0]} `;
+        }
+
+        await chat.sendMessage(`📢 *Pengingat Salat ${name}*\n\n${message}\n\n${mentionText}`, {
+          mentions: participants,
+        });
+
         console.log(`✅ Pengingat Salat ${name} terkirim ke grup ${groupId}`);
       } catch (error) {
         console.error(`❌ Gagal mengirim pengingat Salat ${name}:`, error);
       }
     });
-  });
+  }
 
-  console.log(`📅 Pengingat salat dijadwalkan untuk grup: ${groupId}`);
+  console.log(`📅 Pengingat salat dengan mention semua anggota dijadwalkan untuk grup: ${groupId}`);
 }
 
 // Fungsi untuk menjadwalkan tugas setiap hari pada jam tertentu (Zona Waktu Jakarta)
@@ -273,12 +286,9 @@ function scheduleDailyTask(time: string, task: () => void) {
   }, delay);
 }
 
+
 // ID grup WhatsApp yang akan menerima pengingat (ganti dengan ID grup yang sesuai)
 const PRAYER_GROUP_ID = "120363394864692345@g.us";
-
-
-
-
 
 
 // Inisialisasi Client
