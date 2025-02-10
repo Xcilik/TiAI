@@ -1,6 +1,7 @@
 import json
 from asyncio import get_event_loop_policy
-from pyrogram import Client, filters
+from pyrogram import Client, filters, idle
+
 
 # 🔥 GANTI DENGAN PUNYA KAMU 🔥
 API_ID = 15730670  # Ganti dengan API ID kamu
@@ -31,6 +32,7 @@ async def anjay():
     print("🚀 Userbot sedang berjalan...")
     await app.start()
     await app.send_message("me", "Duar")
+    await idle()
     
 
 if __name__ == "__main__":
