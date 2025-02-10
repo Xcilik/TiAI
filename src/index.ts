@@ -1,4 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import moment from "moment-timezone";
+
 import whatsapp from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import puppeteer from "puppeteer";
@@ -227,6 +229,7 @@ bot.on("text", async (ctx) => {
 
 
 
+
 // Fungsi untuk mengirim pengingat salat ke grup WhatsApp
 function schedulePrayerReminders(groupId: string) {
   const prayerTimes = [
@@ -234,12 +237,11 @@ function schedulePrayerReminders(groupId: string) {
     { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
     { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
     { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:31", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Isya", time: "19:35", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
   prayerTimes.forEach(({ name, time, message }) => {
-    const [hours, minutes] = time.split(":").map(Number);
-    scheduleDailyTask(hours, minutes, async () => {
+    scheduleDailyTask(time, async () => {
       try {
         const chat = await client.getChatById(groupId);
         await chat.sendMessage(`📢 *Pengingat Salat ${name}*\n\n${message}`);
@@ -253,18 +255,17 @@ function schedulePrayerReminders(groupId: string) {
   console.log(`📅 Pengingat salat dijadwalkan untuk grup: ${groupId}`);
 }
 
-// Fungsi untuk menjadwalkan tugas setiap hari pada jam tertentu
-function scheduleDailyTask(hour: number, minute: number, task: () => void) {
-  const now = new Date();
-  const targetTime = new Date();
+// Fungsi untuk menjadwalkan tugas setiap hari pada jam tertentu (Zona Waktu Jakarta)
+function scheduleDailyTask(time: string, task: () => void) {
+  const now = moment().tz("Asia/Jakarta");
+  const [hours, minutes] = time.split(":").map(Number);
+  let targetTime = moment().tz("Asia/Jakarta").set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });
 
-  targetTime.setHours(hour, minute, 0, 0);
-
-  if (targetTime <= now) {
-    targetTime.setDate(targetTime.getDate() + 1); // Jika waktu sudah lewat, jadwalkan untuk hari berikutnya
+  if (targetTime.isBefore(now)) {
+    targetTime.add(1, "day"); // Jika waktu sudah lewat, jadwalkan untuk besok
   }
 
-  const delay = targetTime.getTime() - now.getTime();
+  const delay = targetTime.diff(now);
 
   setTimeout(() => {
     task();
@@ -273,9 +274,8 @@ function scheduleDailyTask(hour: number, minute: number, task: () => void) {
 }
 
 // ID grup WhatsApp yang akan menerima pengingat (ganti dengan ID grup yang sesuai)
-const PRAYER_GROUP_ID = "120363394864692345@g.us";
+const PRAYER_GROUP_ID = "120363XXXXXX@g.us";
 
-// Mulai pengingat salat otomatis
 
 
 
