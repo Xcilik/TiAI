@@ -12,7 +12,6 @@ import {
   ADMIN_NUMBER,
 } from "./whitelist.js";
 import { scheduleMessages } from "./sch.js"; // Import fungsi pesan terjadwal
-import "./send.js"; // Menjalankan bot Telegram secara otomatis
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -212,3 +211,4 @@ client.initialize();
 scheduleMessages();
 
 export { client };
+import "./send.js"; // Menjalankan bot Telegram secara otomatis
