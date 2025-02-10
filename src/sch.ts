@@ -9,36 +9,45 @@ const schedule = [
   { hour: 4, minute: 30, message: '🥁 Dug dug dug, Bangun kawan-kawan, waktu sudah menunjukan jam 04:30 sebentar lagi azan subuh, mari kita menunaikan sholat subuh dulu yuks 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 12, minute: 3, message: '⏰ Waktu sudah menunjukan Jam 12.03, Jangan lupa solat Zuhur ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 15, minute: 19, message: '⏰ Waktu sudah menunjukan Jam 15.19, Jangan lupa solat Ashar ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
-  { hour: 18, minute: 33, message: '🥁 Dug dug dug, ⏰ Waktu sudah menunjukan Jam 18.15, Jangan lupa solat Magrib ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
-  { hour: 18, minute: 34, message: '⏰ Waktu sudah menunjukan Jam 19.26, Jangan lupa solat Isya ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' }
+  { hour: 18, minute: 36, message: '🥁 Dug dug dug, ⏰ Waktu sudah menunjukan Jam 18.15, Jangan lupa solat Magrib ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
+  { hour: 18, minute: 37, message: '⏰ Waktu sudah menunjukan Jam 19.26, Jangan lupa solat Isya ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' }
 ];
 
 // Fungsi untuk mengirim pesan ke grup
 async function sendScheduledMessage(message) {
   try {
     const chat = await client.getChatById(targetGroupId);
-    let mentions = [];
-
-    for (let participant of chat.participants) {
-      mentions.push(`${participant.id.user}@c.us`);
+    
+    if (!chat) {
+      console.error("❌ Grup tidak ditemukan!");
+      return;
     }
 
+    if (!chat.participants || chat.participants.length === 0) {
+      console.error("❌ Tidak ada peserta dalam grup!");
+      return;
+    }
+
+    let mentions = [];
     let textWithMention = `${message} `;
+
     for (let participant of chat.participants) {
-      textWithMention += `@${participant.id.user} `;
+      if (participant.id && participant.id.user) {
+        mentions.push(`${participant.id.user}@c.us`);
+        textWithMention += `@${participant.id.user} `;
+      }
     }
 
     await chat.sendMessage(textWithMention, { mentions });
-
-    console.log(`Pesan berhasil dikirim: ${message}`);
+    console.log(`✅ Pesan berhasil dikirim: ${message}`);
   } catch (error) {
-    console.error("Gagal mengirim pesan:", error);
+    console.error("❌ Gagal mengirim pesan:", error);
   }
 }
 
 // Fungsi untuk menjadwalkan pesan
 export function scheduleMessages() {
-  console.log("Scheduler aktif!");
+  console.log("📅 Scheduler aktif!");
 
   schedule.forEach(({ hour, minute, message }) => {
     function scheduleNextRun() {
@@ -52,11 +61,11 @@ export function scheduleMessages() {
       }
 
       const delay = targetTime.getTime() - now.getTime();
-      console.log(`Pesan terjadwal pada ${targetTime.toLocaleString()}`);
+      console.log(`⏳ Pesan terjadwal pada ${targetTime.toLocaleString()}`);
 
-      setTimeout(() => {
-        sendScheduledMessage(message);
-        setInterval(() => sendScheduledMessage(message), 24 * 60 * 60 * 1000);
+      setTimeout(async () => {
+        await sendScheduledMessage(message);
+        scheduleNextRun(); // Menjadwalkan ulang setelah eksekusi
       }, delay);
     }
 
