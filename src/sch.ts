@@ -1,7 +1,7 @@
 import { client } from './index';  // Pastikan path-nya benar
 
 // ID grup yang ingin dikirim pesan terjadwal
-const targetGroupId = "120363378808823704@g.us"; // Ganti dengan ID grup yang benar
+const targetGroupId = "120363296106393125@g.us"; // Ganti dengan ID grup yang benar
 
 // Pesan yang ingin dikirim untuk setiap waktu
 const messages = [
