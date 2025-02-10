@@ -57,7 +57,7 @@ export function scheduleMessages() {
     { hours: 4, minutes: 30, messageIndex: 2 },  // Sore
     { hours: 12, minutes: 3, messageIndex: 3 },  // Pagi
     { hours: 15, minutes: 19, messageIndex: 4 }, // Siang
-    { hours: 18, minutes: 20, messageIndex: 5 },  // Sore   
+    { hours: 18, minutes: 22, messageIndex: 5 },  // Sore   
     { hours: 19, minutes: 26, messageIndex: 6 }  // Sore    
  
   ];
