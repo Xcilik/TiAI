@@ -231,7 +231,6 @@ bot.on("text", async (ctx) => {
 
 
 // Fungsi untuk mengirim pengingat salat ke grup WhatsApp
-import moment from "moment-timezone";
 
 // Fungsi untuk mengirim pengingat salat ke grup WhatsApp dengan mention semua anggota
 async function schedulePrayerReminders(groupId: string) {
@@ -240,7 +239,7 @@ async function schedulePrayerReminders(groupId: string) {
     { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
     { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
     { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:42", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Isya", time: "19:43", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
   for (const { name, time, message } of prayerTimes) {
