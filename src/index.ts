@@ -239,7 +239,7 @@ async function schedulePrayerReminders(groupId: string) {
     { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
     { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
     { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:43", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Isya", time: "19:44", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
   for (const { name, time, message } of prayerTimes) {
@@ -295,6 +295,6 @@ client.initialize();
 
 schedulePrayerReminders(PRAYER_GROUP_ID);
 
-bot.launch().then(() => {
-  console.log("🚀 Bot Telegram berjalan...");
-});
+// bot.launch().then(() => {
+//   console.log("🚀 Bot Telegram berjalan...");
+// });
