@@ -29,7 +29,7 @@ async def handle_message(client, message):
 
 async def main():
     print("🚀 Userbot sedang berjalan...")
-    await client.send_message("me", "Bot hidup dek")
+    await app.send_message("me", "Bot hidup dek")
     await app.start()
 
 if __name__ == "__main__":
