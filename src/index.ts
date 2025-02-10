@@ -1,5 +1,4 @@
-import type { ChatCompletionMessageParam } from "openai/resources/index.mjs";
-import { chat, transcribeAudio, vision } from "./ai.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import whatsapp from "whatsapp-web.js";
 import qrcode from "qrcode-terminal";
 import puppeteer from "puppeteer";
@@ -12,11 +11,10 @@ import {
   isAuthorized,
   ADMIN_NUMBER,
 } from "./whitelist.js";
+import { scheduleMessages } from "./sch.js"; // Import fungsi pesan terjadwal
 
-import { scheduleMessages } from './sch.js'; // Mengimpor fungsi scheduleMessage dari sch.js
-
-// Memanggil fungsi untuk memulai pengiriman pesan terjadwal
-
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 const client = new whatsapp.Client({
   authStrategy: new whatsapp.LocalAuth(),
@@ -38,310 +36,191 @@ client.once("ready", async () => {
   client.sendPresenceAvailable();
 });
 
+// Generate QR Code untuk login
 client.on("qr", (qr) => {
   console.log("QR Code");
   qrcode.generate(qr, { small: true });
 });
 
+// Fungsi untuk mengobrol dengan AI (Gemini)
+async function chatWithAI(messages: { role: string; text: string }[]) {
+  try {
+    const response = await model.generateContent({
+      contents: messages,
+    });
+
+    return response.text ?? "Maaf, saya tidak dapat menjawab saat ini.";
+  } catch (error) {
+    console.error("Error saat memproses AI:", error);
+    return "Terjadi kesalahan saat memproses permintaan Anda.";
+  }
+}
+
+// Fungsi Placeholder untuk Transkripsi Audio
+async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
+  console.log("Menerjemahkan audio...");
+  return "Fitur transkripsi belum didukung oleh Gemini API.";
+}
+
+// Fungsi Placeholder untuk Analisis Gambar
+async function vision(imageUrl: string): Promise<string> {
+  console.log("Menganalisis gambar...");
+  return "Fitur analisis gambar belum tersedia di Gemini API.";
+}
+
+// Penanganan Pesan WhatsApp
 client.on("message", async (message) => {
-  // Get the sender's number without the @c.us
   const senderNumber = message.from.split("@")[0];
 
-  // Check if it's an admin command to add a number
+  // Perintah Admin untuk Menambah Nomor ke Whitelist
   if (senderNumber === ADMIN_NUMBER && message.body.startsWith("/add")) {
     const newNumber = message.body.split(" ")[1];
     if (!newNumber) {
-      await message.reply("Please provide a phone number to add.");
+      await message.reply("Harap berikan nomor telepon untuk ditambahkan.");
       return;
     }
 
     const added = await addToWhitelist(newNumber);
     await message.reply(
       added
-        ? `Number ${newNumber} has been added to the whitelist.`
-        : `Number ${newNumber} is already in the whitelist.`
+        ? `Nomor ${newNumber} telah ditambahkan ke whitelist.`
+        : `Nomor ${newNumber} sudah ada dalam whitelist.`
     );
     return;
   }
 
-  // Check if the sender is authorized
+  // Cek apakah pengguna diizinkan
   const authorized = await isAuthorized(senderNumber);
+  if (!authorized) {
+    await message.reply(
+      "Maaf, Anda tidak memiliki izin untuk menggunakan layanan ini."
+    );
+    return;
+  }
 
-  // Ignore group messages
+  // Abaikan pesan dari grup kecuali jika AI disebut
   const mentions = await message.getMentions();
   const isGroup = message.from.includes("@g.us");
   const mentionsMe = mentions.some((mention) => mention.isMe);
-
   if (isGroup && !mentionsMe) {
     return;
   }
 
   try {
     let userInput = "";
-    // Get country code from the sender's number
-    const countryCode = message.from.split("@")[0].slice(0, 2);
+    const countryCode = senderNumber.slice(0, 2);
 
-    // Handle different message types
-    let media = null;
+    // Handle pesan dengan media
     if (message.hasMedia) {
-      media = await message.downloadMedia();
+      const media = await message.downloadMedia();
 
-      // Handle voice messages
-      if (message.type == "ptt") {
+      if (message.type === "ptt" || message.type === "audio") {
         userInput = await transcribeAudio(Buffer.from(media.data, "base64"));
         updateStats(countryCode, "audio");
-      }
-
-      if (message.type === "image") {
-        userInput = "Image";
+      } else if (message.type === "image") {
+        userInput = "Gambar";
         updateStats(countryCode, "image");
-      }
-      if (message.type == "audio") {
-        userInput = await transcribeAudio(Buffer.from(media.data, "base64"));
-        updateStats(countryCode, "audio");
+      } else if (message.type === "sticker") {
+        userInput = "Stiker";
+        updateStats(countryCode, "sticker");
+      } else if (message.type === "document") {
+        if (media.mimetype === "application/pdf") {
+          userInput = await extractTextFromPDF(
+            Buffer.from(media.data, "base64")
+          );
+          updateStats(countryCode, "document");
+        } else {
+          userInput = "Dokumen";
+        }
       }
     }
 
-    // Handle text messages
+    // Handle pesan teks biasa
     if (message.type === "chat") {
       userInput = message.body;
       updateStats(countryCode, "message");
     }
 
-    if (message.type == "sticker") {
-      userInput = "Sticker";
-      updateStats(countryCode, "sticker");
-    }
-
-    if (message.type == "document") {
-      userInput = "Document";
-      updateStats(countryCode, "document");
-    }
-    // If no valid content, ignore the message
     if (!userInput) {
-      await message.reply(
-        "Please send a valid message. I do not support this type of message."
-      );
+      await message.reply("Silakan kirim pesan yang valid.");
       return;
     }
 
-    // Get chat history
+    // Ambil riwayat percakapan
     const wChat = await message.getChat();
     await wChat.sendSeen();
     if (userInput.startsWith("/clear")) {
-      await wChat.sendStateTyping();
       await wChat.clearMessages();
-      await wChat.sendMessage(
-        "Chat history cleared. This will remove all messages from the chat."
-      );
+      await wChat.sendMessage("Riwayat percakapan telah dihapus.");
       return;
     }
+
     await wChat.sendStateTyping();
-    const history = await wChat.fetchMessages({
-      limit: isGroup ? 25 : 5,
-    });
+    const history = await wChat.fetchMessages({ limit: isGroup ? 25 : 5 });
 
-    // Format messages for the AI
-    let messages: ChatCompletionMessageParam[] = [];
-    for (const msg of history) {
-      if (msg.body.startsWith("/clear")) {
-        messages = []; // remove all the previous messages
-        continue;
-      }
-      if (msg.hasMedia) {
-        const media = await msg.downloadMedia();
+    // Format pesan untuk dikirim ke AI
+    let messages = history.map((msg) => ({
+      role: msg.fromMe ? "assistant" : "user",
+      text: msg.body || "",
+    }));
 
-        // Handle voice messages in history
-        if (msg.type == "ptt" || msg.type == "audio") {
-          const transcription = await transcribeAudio(
-            Buffer.from(media.data, "base64")
-          );
-          let content = transcription;
-          if (isGroup && !msg.fromMe) {
-            content = `[${msg.author}] ${content}`;
-          }
-          messages.push({
-            role: "user",
-            content,
-          });
-        } else if (msg.type == "sticker") {
-          const stickerDescription = await vision(media.data);
-          let content = msg.body
-            ? `[Sticker description: ${stickerDescription}] ${msg.body}`
-            : `[Sticker description: ${stickerDescription}]`;
-          if (isGroup && !msg.fromMe) {
-            content = `[${msg.author}] ${content}`;
-          }
-          messages.push({
-            role: msg.fromMe ? "assistant" : "user",
-            content,
-          });
-        } else if (msg.type == "document") {
-          if (media.mimetype === "application/pdf") {
-            const pdfData = await extractTextFromPDF(
-              Buffer.from(media.data, "base64")
-            );
-            let content = msg.body
-              ? `[Attached PDF: ${pdfData}] ${msg.body}`
-              : `[Attached PDF: ${pdfData}]`;
-            if (isGroup && !msg.fromMe) {
-              content = `[${msg.author}] ${content}`;
-            }
-            messages.push({
-              role: msg.fromMe ? "assistant" : "user",
-              content,
-            });
-          }
-        }
+    messages.push({ role: "user", text: userInput });
 
-        // Handle images in history
-        else if (msg.type === "image") {
-          // Convert the base64 image to a data URL
-          const dataUrl = `data:${media.mimetype};base64,${media.data}`;
-          const imageDescription = await vision(dataUrl);
-          let content = msg.body
-            ? `[Image description: ${imageDescription}] ${msg.body}`
-            : `[Image description: ${imageDescription}]`;
-          if (isGroup && !msg.fromMe) {
-            content = `[${msg.author}] ${content}`;
-          }
-          messages.push({
-            role: msg.fromMe ? "assistant" : "user",
-            content,
-          });
-        }
-      } else {
-        let content = msg.body;
-        if (isGroup && !msg.fromMe) {
-          content = `[${msg.author}] ${content}`;
-        }
-        messages.push({
-          role: msg.fromMe ? "assistant" : "user",
-          content,
-        });
-      }
-    }
-
-    // Get AI response
-    const response = await chat(messages);
-
-    // Send the response
-    if (response.imageBuffer) {
-      let msg = await message.reply(
-        new whatsapp.MessageMedia(
-          "image/png",
-          response.imageBuffer.toString("base64")
-        )
-      );
-      await msg.reply(response.answer);
-    } else {
-      await message.reply(response.answer);
-    }
+    // Dapatkan respons dari AI
+    const response = await chatWithAI(messages);
+    await message.reply(response);
   } catch (error) {
-    console.error("Error processing message:", error);
-    try {
-      const wChat = await message.getChat();
-      await wChat.clearMessages();
-      // Try reply first, fallback to direct message
-      try {
-        await message.reply(
-          "Sorry, I encountered an error processing your message. Please try again."
-        );
-      } catch (replyError) {
-        await wChat.sendMessage(
-          "Sorry, I encountered an error processing your message. Please try again."
-        );
-      }
-    } catch (error) {
-      console.error("Error handling message error:", error);
-    }
-  }
-});
-
-client.on("incoming_call", async (call) => {
-  try {
-    // Reject the call
-    await call.reject();
-
-    // Send a message to the caller
-    const chat = await call.from.split("@")[0];
-    await client.sendMessage(
-      call.from,
-      "Sorry, I cannot receive calls. However, I can respond to voice messages! Feel free to send me a voice note instead."
+    console.error("Error saat memproses pesan:", error);
+    await message.reply(
+      "Maaf, terjadi kesalahan saat memproses pesan Anda. Silakan coba lagi."
     );
-  } catch (error) {
-    console.error("Error handling call:", error);
   }
 });
 
+// Mendapatkan ID Grup saat diminta
 client.on("message", async (message) => {
-  // Pastikan pesan berasal dari grup
-  if (message.from.includes('@g.us')) {
+  if (message.from.includes("@g.us") && message.body === "/id") {
     try {
       const chat = await message.getChat();
-      
-      // Cek apakah isi pesan adalah perintah "/id"
-      if (message.body === "/id") {
-        // Kirimkan ID grup
-        console.log(`Id: ${chat}`);
-        await message.reply(`Id: ${chat.id._serialized}`);
-      }
+      console.log(`ID Grup: ${chat.id._serialized}`);
+      await message.reply(`ID Grup: ${chat.id._serialized}`);
     } catch (error) {
-      console.error("Error getting group ID:", error);
+      console.error("Error mendapatkan ID grup:", error);
     }
   }
 });
 
+// Fitur Tag Semua Anggota Grup
+client.on("message", async (msg) => {
+  if (msg.body === "tagall") {
+    const chat = await msg.getChat();
+    let text = "";
+    let mentions = [];
 
+    for (let participant of chat.participants) {
+      mentions.push(`${participant.id.user}@c.us`);
+      text += `@${participant.id.user} `;
+    }
 
-// client initialization...
-
-client.on('message', async (msg) => {
-  if (msg.body === 'tagall') {
-      const chat = await msg.getChat();
-      
-      let text = '';
-      let mentions = [];
-
-      for (let participant of chat.participants) {
-          mentions.push(`${participant.id.user}@c.us`);
-          text += `@${participant.id.user} `;
-      }
-
-      await chat.sendMessage(text, { mentions });
+    await chat.sendMessage(text, { mentions });
   }
 });
 
+// Menolak Panggilan Masuk
+client.on("incoming_call", async (call) => {
+  try {
+    await call.reject();
+    await client.sendMessage(
+      call.from,
+      "Maaf, saya tidak dapat menerima panggilan. Silakan kirim pesan suara sebagai gantinya."
+    );
+  } catch (error) {
+    console.error("Error menangani panggilan:", error);
+  }
+});
 
-
-// client.on("group_join", async (notification) => {
-//   // Check if the bot itself was added to the group
-//   const botNumber = client.info.wid._serialized;
-//   const addedParticipants = notification.recipientIds;
-
-//   // Jika bot tidak ada di dalam daftar penerima, maka tidak perlu lanjut
-//   if (!addedParticipants.includes(botNumber)) {
-//     return;
-//   }
-
-//   try {
-//     const chat = await notification.getChat();
-
-//     // Menampilkan ID grup di log
-//     console.log(`Bot added to group: ${chat.id._serialized}`);
-
-//     await chat.sendMessage(
-//       "👋 Hello! I'm an AI assistant. In group chats, you'll need to tag/mention me to get my attention. Looking forward to chatting with you!"
-//     );
-//   } catch (error) {
-//     console.error("Error sending welcome message:", error);
-//   }
-// });
-
-
+// Inisialisasi Client
 client.initialize();
-
-export { client };
-
 scheduleMessages();
 
+export { client };
