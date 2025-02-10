@@ -237,7 +237,7 @@ function schedulePrayerReminders(groupId: string) {
     { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
     { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
     { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:35", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Isya", time: "19:36", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
   prayerTimes.forEach(({ name, time, message }) => {
@@ -274,7 +274,7 @@ function scheduleDailyTask(time: string, task: () => void) {
 }
 
 // ID grup WhatsApp yang akan menerima pengingat (ganti dengan ID grup yang sesuai)
-const PRAYER_GROUP_ID = "120363XXXXXX@g.us";
+const PRAYER_GROUP_ID = "120363394864692345@g.us";
 
 
 
