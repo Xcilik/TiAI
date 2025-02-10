@@ -80,31 +80,6 @@ async function vision(imageUrl: string): Promise<string> {
 client.on("message", async (message) => {
   const senderNumber = message.from.split("@")[0];
 
-  // Perintah Admin untuk Menambah Nomor ke Whitelist
-  if (senderNumber === ADMIN_NUMBER && message.body.startsWith("/add")) {
-    const newNumber = message.body.split(" ")[1];
-    if (!newNumber) {
-      await message.reply("Harap berikan nomor telepon untuk ditambahkan.");
-      return;
-    }
-
-    const added = await addToWhitelist(newNumber);
-    await message.reply(
-      added
-        ? `Nomor ${newNumber} telah ditambahkan ke whitelist.`
-        : `Nomor ${newNumber} sudah ada dalam whitelist.`
-    );
-    return;
-  }
-
-  // Cek apakah pengguna diizinkan
-  const authorized = await isAuthorized(senderNumber);
-  if (!authorized) {
-    await message.reply(
-      "Maaf, Anda tidak memiliki izin untuk menggunakan layanan ini."
-    );
-    return;
-  }
 
   // Abaikan pesan dari grup kecuali jika AI disebut
   const mentions = await message.getMentions();
@@ -191,7 +166,7 @@ client.on("message", async (message) => {
 
 // Mendapatkan ID Grup saat diminta
 client.on("message", async (message) => {
-  if (message.from.includes("@g.us") && message.body === "/id") {
+  if (message.from.includes("@g.us") && message.body === "/idd") {
     try {
       const chat = await message.getChat();
       console.log(`ID Grup: ${chat.id._serialized}`);
