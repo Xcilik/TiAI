@@ -30,7 +30,8 @@ async def handle_message(client, message):
 async def anjay():
     print("🚀 Userbot sedang berjalan...")
     await app.start()
+    await app.send_message("me", "Duar")
     
 
 if __name__ == "__main__":
-    get_event_loop_policy().get_event_loop().run_until_complete(anjay)
+    get_event_loop_policy().get_event_loop().run_until_complete(anjay())
