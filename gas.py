@@ -11,9 +11,7 @@ BOT_ID = 6562504159  # ID bot yang akan dipantau
 # Inisialisasi Pyrogram Userbot dengan String Session
 app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_SESSION)
 
-@app.on_message(
-    ~filters.me & filters.private & filters.bot & filters.incoming, group=69
-):
+@app.on_message(~filters.me & filters.private & filters.bot & filters.incoming, group=69)
 async def handle_message(client, message):
     try:
         # Cek apakah pesan berbentuk JSON
