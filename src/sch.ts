@@ -1,6 +1,6 @@
 import { client } from './index';  // Pastikan path sudah benar
 
-const targetGroupId = "120363296106393125@g.us"; // Ganti dengan ID grup yang benar
+const targetGroupId = "120363394864692345@g.us"; // Ganti dengan ID grup yang benar
 
 // Daftar pesan dan jadwalnya
 const schedule = [
@@ -9,8 +9,8 @@ const schedule = [
   { hour: 4, minute: 30, message: '🥁 Dug dug dug, Bangun kawan-kawan, waktu sudah menunjukan jam 04:30 sebentar lagi azan subuh, mari kita menunaikan sholat subuh dulu yuks 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 12, minute: 3, message: '⏰ Waktu sudah menunjukan Jam 12.03, Jangan lupa solat Zuhur ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
   { hour: 15, minute: 19, message: '⏰ Waktu sudah menunjukan Jam 15.19, Jangan lupa solat Ashar ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
-  { hour: 18, minute: 30, message: '🥁 Dug dug dug, ⏰ Waktu sudah menunjukan Jam 18.15, Jangan lupa solat Magrib ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
-  { hour: 19, minute: 26, message: '⏰ Waktu sudah menunjukan Jam 19.26, Jangan lupa solat Isya ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' }
+  { hour: 18, minute: 33, message: '🥁 Dug dug dug, ⏰ Waktu sudah menunjukan Jam 18.15, Jangan lupa solat Magrib ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' },
+  { hour: 18, minute: 34, message: '⏰ Waktu sudah menunjukan Jam 19.26, Jangan lupa solat Isya ya Kawan-kawan 🥰 🥰 🥰\n\n👥 All Member:\n' }
 ];
 
 // Fungsi untuk mengirim pesan ke grup
