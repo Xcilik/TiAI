@@ -23,10 +23,8 @@ async def handle_message(client, message):
             await client.send_message("MediailmuJoinBot", message.text)
             print("✅ Pesan dikirim ulang ke bot.")
     
-    except json.JSONDecodeError:
-        print("⛔ Pesan bukan JSON, diabaikan.")
-    except Exception as e:
-        print(f"❌ Error: {e}")
+    except:
+        pass
 
 async def anjay():
     print("🚀 Userbot sedang berjalan...")
