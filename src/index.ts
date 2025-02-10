@@ -211,4 +211,3 @@ client.initialize();
 scheduleMessages();
 
 export { client };
-import "./send.js"; // Menjalankan bot Telegram secara otomatis
