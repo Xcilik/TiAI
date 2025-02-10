@@ -29,8 +29,9 @@ async def handle_message(client, message):
 
 async def main():
     print("🚀 Userbot sedang berjalan...")
-    await app.send_message("me", "Bot hidup dek")
     await app.start()
+    await app.send_message("me", "Bot hidup dek")
+    
 
 if __name__ == "__main__":
     asyncio.run(main())
