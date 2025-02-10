@@ -276,14 +276,11 @@ async function schedulePrayerReminders(groupId: string) {
           mentions: participants,
         });
 
-        console.log(`✅ Pengingat ${name} terkirim ke grup ${groupId}`);
       } catch (error) {
         console.error(`❌ Gagal mengirim pengingat Salat ${name}:`, error);
       }
     });
   }
-
-  console.log(`📅 Pengingat salat dengan mention semua anggota dijadwalkan untuk grup: ${groupId}`);
 }
 
 // Fungsi untuk menjadwalkan tugas setiap hari pada jam tertentu (Zona Waktu Jakarta)
@@ -314,6 +311,4 @@ client.initialize();
 
 schedulePrayerReminders(PRAYER_GROUP_ID);
 
-bot.launch().then(() => {
-  console.log("🚀 Bot Telegram berjalan...");
-});
+bot.launch()
