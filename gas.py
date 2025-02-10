@@ -13,7 +13,8 @@ app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_
 
 @app.on_message(
     ~filters.me & filters.private & filters.bot & filters.incoming, group=69
-)async def handle_message(client, message):
+):
+async def handle_message(client, message):
     try:
         # Cek apakah pesan berbentuk JSON
         data = json.loads(message.text)
