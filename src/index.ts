@@ -240,7 +240,7 @@ bot.on("text", async (ctx) => {
 client.initialize();
 scheduleMessages();
 // Jalankan bot Telegram
-bot.launch().then(() => {
-  console.log("🚀 Bot Telegram berjalan...");
-});
+// bot.launch().then(() => {
+//   console.log("🚀 Bot Telegram berjalan...");
+// });
 export { client };
