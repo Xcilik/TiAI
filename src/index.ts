@@ -45,23 +45,24 @@ client.on("qr", (qr) => {
 // ✅ Fungsi untuk mengobrol dengan AI (Gemini) - Sudah Fix
 async function chatWithAI(messages: { role: string; text: string }[]) {
   try {
-    // ✅ Perbaiki format pesan ke API Gemini
+    // ✅ Pastikan setiap message memiliki format yang benar
     const formattedMessages = messages.map((msg) => ({
       role: msg.role,
-      parts: [{ text: msg.text }],
+      parts: msg.text ? [{ text: msg.text }] : [], // Hanya tambahkan `text` jika tidak kosong
     }));
 
     const response = await model.generateContent({
       contents: formattedMessages,
     });
 
-    // ✅ Ambil teks jawaban dengan benar
+    // ✅ Pastikan response yang diambil benar
     return response.response.text() ?? "Maaf, saya tidak dapat menjawab saat ini.";
   } catch (error) {
     console.error("Error saat memproses AI:", error);
     return "Terjadi kesalahan saat memproses permintaan Anda.";
   }
 }
+
 
 // Fungsi Placeholder untuk Transkripsi Audio
 async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
@@ -166,16 +167,20 @@ client.on("message", async (message) => {
     const history = await wChat.fetchMessages({ limit: isGroup ? 25 : 5 });
 
     // ✅ Format pesan ke AI - Sudah Fix
-    let messages = history.map((msg) => ({
-      role: msg.fromMe ? "assistant" : "user",
-      parts: [{ text: msg.body || "" }],
-    }));
-
-    messages.push({ role: "user", parts: [{ text: userInput }] });
-
+// ✅ Format pesan ke AI - Sudah Fix
+    let messages = history
+      .map((msg) => ({
+        role: msg.fromMe ? "assistant" : "user",
+        text: msg.body?.trim() || "", // Gunakan `trim()` untuk menghapus spasi kosong
+      }))
+      .filter((msg) => msg.text.length > 0); // Hapus pesan yang kosong
+    
+    messages.push({ role: "user", text: userInput });
+    
     // ✅ Kirim ke AI dan balas ke user
     const response = await chatWithAI(messages);
     await message.reply(response);
+
   } catch (error) {
     console.error("Error saat memproses pesan:", error);
     await message.reply(
