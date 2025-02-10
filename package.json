@@ -1,7 +1,7 @@
 {
   "name": "deepseek-whatsapp",
-  "version": "1.0.1",
-  "description": "WhatsApp AI Assistant menggunakan TypeScript dan Google Gemini API",
+  "version": "1.1.0",
+  "description": "WhatsApp AI Assistant menggunakan TypeScript, Google Gemini API, dan Telegram Bot",
   "module": "src/index.ts",
   "type": "module",
   "scripts": {
@@ -17,7 +17,8 @@
     "pdfjs-dist": "^3.11.174",
     "puppeteer": "^24.1.1",
     "qrcode-terminal": "^0.12.0",
-    "whatsapp-web.js": "^1.26.1-alpha.3"
+    "whatsapp-web.js": "^1.26.1-alpha.3",
+    "telegraf": "^4.12.2"  // ✅ Menambahkan dependency untuk bot Telegram
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -33,7 +34,7 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "keywords": ["whatsapp", "ai", "gemini", "typescript", "bot"],
+  "keywords": ["whatsapp", "ai", "gemini", "typescript", "bot", "telegram"],
   "author": "Your Name",
   "license": "MIT"
 }
