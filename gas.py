@@ -11,15 +11,16 @@ BOT_ID = 6562504159  # ID bot yang akan dipantau
 # Inisialisasi Pyrogram Userbot dengan String Session
 app = Client("userbot", api_id=API_ID, api_hash=API_HASH, session_string=STRING_SESSION)
 
-@app.on_message(filters.private & filters.incoming)  # Hanya pesan dari bot ini
-async def handle_message(client, message):
+@app.on_message(
+    ~filters.me & filters.private & filters.bot & filters.incoming, group=69
+)async def handle_message(client, message):
     try:
         # Cek apakah pesan berbentuk JSON
         data = json.loads(message.text)
         
         # Jika ada kunci "amount", kirim ulang pesan ke bot pengirim
         if "amount" in data:
-            await client.send_message(BOT_ID, message.text)
+            await client.send_message("MediailmuJoinBot", message.text)
             print("✅ Pesan dikirim ulang ke bot.")
     
     except json.JSONDecodeError:
@@ -30,7 +31,6 @@ async def handle_message(client, message):
 async def main():
     print("🚀 Userbot sedang berjalan...")
     await app.start()
-    await asyncio.Event().wait()  # Menjalankan userbot tanpa berhenti
 
 if __name__ == "__main__":
     asyncio.run(main())
