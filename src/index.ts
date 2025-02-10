@@ -16,6 +16,16 @@ import { scheduleMessages } from "./sch.js"; // Import fungsi pesan terjadwal
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+
+
+import { Telegraf } from "telegraf";
+
+// Inisialisasi bot Telegram
+
+
+
+
+
 const client = new whatsapp.Client({
   authStrategy: new whatsapp.LocalAuth(),
   puppeteer: {
@@ -206,8 +216,31 @@ client.on("incoming_call", async (call) => {
   }
 });
 
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN!);
+
+// Nomor WhatsApp tujuan (dalam format internasional tanpa tanda +)
+const TARGET_WHATSAPP_NUMBER = process.env.ADMIN_NUMBER!;
+
+// Event listener saat menerima pesan di Telegram
+bot.on("text", async (ctx) => {
+  const messageText = ctx.message.text;
+
+  if (messageText.toLowerCase().startsWith("test")) {
+    try {
+      await client.sendMessage(`${TARGET_WHATSAPP_NUMBER}@c.us`, messageText);
+      ctx.reply("✅ Pesan telah dikirim ke WhatsApp!");
+    } catch (error) {
+      console.error("❌ Gagal mengirim pesan ke WhatsApp:", error);
+      ctx.reply("❌ Terjadi kesalahan saat mengirim pesan ke WhatsApp.");
+    }
+  }
+});
+
 // Inisialisasi Client
 client.initialize();
 scheduleMessages();
-
+// Jalankan bot Telegram
+bot.launch().then(() => {
+  console.log("🚀 Bot Telegram berjalan...");
+});
 export { client };
