@@ -214,18 +214,35 @@ const TARGET_WHATSAPP_NUMBER = process.env.ADMIN_NUMBER!;
 
 // Event listener saat menerima pesan di Telegram
 bot.on("text", async (ctx) => {
-  const messageText = ctx.message.text;
+  try {
+    const messageText = ctx.message.text;
 
-  if (messageText.toLowerCase().startsWith("test")) {
+    // Coba parse pesan sebagai JSON
+    let parsedData;
     try {
-      await client.sendMessage(`${TARGET_WHATSAPP_NUMBER}@c.us`, messageText);
-      ctx.reply("✅ Pesan telah dikirim ke WhatsApp!");
+      parsedData = JSON.parse(messageText);
     } catch (error) {
-      console.error("❌ Gagal mengirim pesan ke WhatsApp:", error);
-      ctx.reply("❌ Terjadi kesalahan saat mengirim pesan ke WhatsApp.");
+      return; // Abaikan jika bukan JSON
     }
+
+    // Pastikan JSON memiliki field "amount"
+    if (parsedData.amount) {
+      const amount = parsedData.amount;
+      const source = parsedData.payment_details?.source || "Tidak diketahui";
+      
+      const whatsappMessage = `📥 Uang masuk: Rp${amount.toLocaleString()} via ${source}`;
+
+      // Kirim ke WhatsApp
+      await client.sendMessage(`${TARGET_WHATSAPP_NUMBER}@c.us`, whatsappMessage);
+      await ctx.reply(`✅ Pesan terkirim ke WhatsApp: ${whatsappMessage}`);
+      
+      console.log("✅ Pesan terkirim:", whatsappMessage);
+    }
+  } catch (error) {
+    console.error("❌ Error saat memproses pesan:", error);
   }
 });
+
 
 
 
@@ -235,11 +252,13 @@ bot.on("text", async (ctx) => {
 // Fungsi untuk mengirim pengingat salat ke grup WhatsApp dengan mention semua anggota
 async function schedulePrayerReminders(groupId: string) {
   const prayerTimes = [
-    { name: "Subuh", time: "04:30", message: "🌅 Waktunya Salat Subuh! Jangan lupa berdoa dan memulai hari dengan berkah." },
-    { name: "Dzuhur", time: "12:15", message: "☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
-    { name: "Ashar", time: "15:30", message: "🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
-    { name: "Maghrib", time: "18:20", message: "🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
-    { name: "Isya", time: "19:44", message: "🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
+    { name: "Pagi", time: "06:00", message: "👋 Selamat Pagi Kawan-kawan, yang masih bobo ayo bangun-bangun sudah pagi ini, Jangan lupa Sarapan pagi 🥰 🥰 🥰." },
+    { name: "Malam", time: "21:00", message: "😴 Selamat Malam Kawan-kawan, ini udah malem loh bobo yu nanti kalian sakit kalo bergadang terus, Have a good night sleep 🌝🌛💫." },    
+    { name: "Subuh", time: "04:30", message: "📢 *Pengingat Salat*\n\n🌅 Waktunya Salat Subuh! Jangan lupa berdoa dan memulai hari dengan berkah." },
+    { name: "Dzuhur", time: "12:15", message: "📢 *Pengingat Salat*\n\n☀️ Waktunya Salat Dzuhur! Luangkan waktu sejenak untuk beribadah." },
+    { name: "Ashar", time: "15:20", message: "📢 *Pengingat Salat*\n\n🌤️ Waktunya Salat Ashar! Tetap semangat dan jangan tinggalkan salat ya." },
+    { name: "Maghrib", time: "18:15", message: "📢 *Pengingat Salat*\n\n🌇 Waktunya Salat Maghrib! Semoga ibadah kita diterima." },
+    { name: "Isya", time: "19:28", message: "📢 *Pengingat Salat*\n\n🌙 Waktunya Salat Isya! Istirahatkan tubuh dan jangan lupa salat." },
   ];
 
   for (const { name, time, message } of prayerTimes) {
@@ -253,11 +272,11 @@ async function schedulePrayerReminders(groupId: string) {
           mentionText += `@${participant.split("@")[0]} `;
         }
 
-        await chat.sendMessage(`📢 *Pengingat Salat ${name}*\n\n${message}\n\n${mentionText}`, {
+        await chat.sendMessage(`${message}\n\n${mentionText}`, {
           mentions: participants,
         });
 
-        console.log(`✅ Pengingat Salat ${name} terkirim ke grup ${groupId}`);
+        console.log(`✅ Pengingat ${name} terkirim ke grup ${groupId}`);
       } catch (error) {
         console.error(`❌ Gagal mengirim pengingat Salat ${name}:`, error);
       }
@@ -287,7 +306,7 @@ function scheduleDailyTask(time: string, task: () => void) {
 
 
 // ID grup WhatsApp yang akan menerima pengingat (ganti dengan ID grup yang sesuai)
-const PRAYER_GROUP_ID = "120363394864692345@g.us";
+const PRAYER_GROUP_ID = "120363296106393125@g.us";
 
 
 // Inisialisasi Client
@@ -295,6 +314,6 @@ client.initialize();
 
 schedulePrayerReminders(PRAYER_GROUP_ID);
 
-// bot.launch().then(() => {
-//   console.log("🚀 Bot Telegram berjalan...");
-// });
+bot.launch().then(() => {
+  console.log("🚀 Bot Telegram berjalan...");
+});
