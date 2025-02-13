@@ -66,15 +66,7 @@ async function chatWithAI(messages: { role: string; text: string }[]) {
   }
 }
 
-async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
-  console.log("Menerjemahkan audio...");
-  return "Fitur transkripsi belum didukung oleh Gemini API.";
-}
 
-async function vision(imageUrl: string): Promise<string> {
-  console.log("Menganalisis gambar...");
-  return "Fitur analisis gambar belum tersedia di Gemini API.";
-}
 
 client.on("message", async (message) => {
   const senderNumber = message.from.split("@")[0];
@@ -88,25 +80,6 @@ client.on("message", async (message) => {
     let userInput = "";
     const countryCode = senderNumber.slice(0, 2);
 
-    if (message.hasMedia) {
-      const media = await message.downloadMedia();
-      if (message.type === "ptt" || message.type === "audio") {
-        userInput = await transcribeAudio(Buffer.from(media.data, "base64"));
-        updateStats(countryCode, "audio");
-      } else if (message.type === "image") {
-        userInput = "Gambar";
-        updateStats(countryCode, "image");
-      } else if (message.type === "sticker") {
-        userInput = "Stiker";
-        updateStats(countryCode, "sticker");
-      } else if (message.type === "document" && media.mimetype === "application/pdf") {
-        userInput = await extractTextFromPDF(Buffer.from(media.data, "base64"));
-        updateStats(countryCode, "document");
-      } else {
-        userInput = "Dokumen";
-      }
-    }
-
     if (message.type === "chat") {
       userInput = message.body;
       updateStats(countryCode, "message");
@@ -119,12 +92,6 @@ client.on("message", async (message) => {
 
     const wChat = await message.getChat();
     await wChat.sendSeen();
-
-    if (userInput.startsWith("/clear")) {
-      await wChat.clearMessages();
-      await wChat.sendMessage("Riwayat percakapan telah dihapus.");
-      return;
-    }
 
     await wChat.sendStateTyping();
     const history = await wChat.fetchMessages({ limit: isGroup ? 25 : 5 });
@@ -212,6 +179,8 @@ function scheduleDailyTask(time: string, task: () => void) {
 }
 
 const PRAYER_GROUP_ID = "120363296106393125@g.us";
-client.initialize();
+client.initialize().catch(err => {
+  console.error("❌ Gagal menginisialisasi client:", err);
+});
 schedulePrayerReminders(PRAYER_GROUP_ID);
 bot.launch();
