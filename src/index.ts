@@ -12,7 +12,7 @@ import {
   isAuthorized,
   ADMIN_NUMBER,
 } from "./whitelist.js";
-import { Telegraf } from "telegraf";
+import TelegramBot from 'node-telegram-bot-api';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -66,7 +66,10 @@ async function chatWithAI(messages: { role: string; text: string }[]) {
   }
 }
 
-
+async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
+  console.log("Menerjemahkan audio...");
+  return "Fitur transkripsi belum didukung oleh Gemini API.";
+}
 
 client.on("message", async (message) => {
   const senderNumber = message.from.split("@")[0];
@@ -113,12 +116,12 @@ client.on("message", async (message) => {
   }
 });
 
-// Error handling for Telegram
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN!);
+// Using node-telegram-bot-api for Telegram
+const bot = new TelegramBot(process.env.TELEGRAM_BOT_TOKEN!, { polling: true });
 
-bot.on("text", async (ctx) => {
+bot.on('text', async (msg) => {
   try {
-    const messageText = ctx.message.text;
+    const messageText = msg.text;
     let parsedData;
     try {
       parsedData = JSON.parse(messageText);
@@ -131,7 +134,7 @@ bot.on("text", async (ctx) => {
       const source = parsedData.payment_details?.source || "Tidak diketahui";
       const whatsappMessage = `📥 Uang masuk: Rp${amount.toLocaleString()} via ${source}`;
       await client.sendMessage(`${process.env.ADMIN_NUMBER}@c.us`, whatsappMessage);
-      await ctx.reply(`✅ Pesan terkirim ke WhatsApp: ${whatsappMessage}`);
+      await bot.sendMessage(msg.chat.id, `✅ Pesan terkirim ke WhatsApp: ${whatsappMessage}`);
     }
   } catch (error) {
     console.error("❌ Error saat memproses pesan:", error);
@@ -183,4 +186,3 @@ client.initialize().catch(err => {
   console.error("❌ Gagal menginisialisasi client:", err);
 });
 schedulePrayerReminders(PRAYER_GROUP_ID);
-bot.launch();
